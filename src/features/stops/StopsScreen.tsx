@@ -67,8 +67,8 @@ export function StopsScreen(): ReactElement {
   const count = draft.stops.length;
   const continueLabel = `Continue (${count} ${count === 1 ? 'stop' : 'stops'})`;
   return (
-    <AppShell active="stops">
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior="height">
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="height">
+      <AppShell active="stops">
         <DraftRecovery />
         <View style={{ paddingHorizontal: 14, paddingTop: 12, gap: 10, paddingBottom: 8 }}>
           <View
@@ -196,7 +196,7 @@ export function StopsScreen(): ReactElement {
               jumpTimer.current = setTimeout(() => {
                 list.current?.scrollToLocation({
                   sectionIndex: target.sectionIndex,
-                  itemIndex: 0,
+                  itemIndex: 1,
                   viewOffset: 28,
                   animated: true,
                 });
@@ -250,9 +250,10 @@ export function StopsScreen(): ReactElement {
                   onPress={() => {
                     if (jumpTimer.current) clearTimeout(jumpTimer.current);
                     jump.current = { sectionIndex, attempts: 0 };
+                    // Native sticky headers can report offset zero; target the first row.
                     list.current?.scrollToLocation({
                       sectionIndex,
-                      itemIndex: 0,
+                      itemIndex: 1,
                       viewOffset: 28,
                       animated: true,
                     });
@@ -358,7 +359,7 @@ export function StopsScreen(): ReactElement {
             }}
           />
         )}
-      </KeyboardAvoidingView>
-    </AppShell>
+      </AppShell>
+    </KeyboardAvoidingView>
   );
 }

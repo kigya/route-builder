@@ -72,3 +72,38 @@ test('keeps generated base splash resources usable below Android 13', async () =
     _: '@color/splashscreen_background',
   });
 });
+
+async function regenerateMainApplication(contents) {
+  const config = withAndroidTesting({ name: 'Fixture', slug: 'fixture' });
+  const result = await config.mods.android.mainApplication({
+    ...config,
+    modResults: { language: 'kt', contents },
+    modRequest: { platform: 'android', modName: 'mainApplication' },
+  });
+  return result.modResults.contents;
+}
+
+test('installs a non-retrying React Native network factory before native runtime startup and regenerates once', async () => {
+  const original = `package com.example.fixture
+import android.app.Application
+class MainApplication : Application() {
+  fun host() { initialize(context = applicationContext,) }
+  override fun onCreate() {
+    super.onCreate()
+    loadReactNative(this)
+    preserveUnrelatedInitialization()
+  }
+}`;
+  const first = await regenerateMainApplication(original);
+  expect(first).toContain('import com.facebook.react.modules.network.OkHttpClientProvider');
+  expect(first).toContain('OkHttpClientProvider.createClientBuilder(applicationContext)');
+  expect(first).toContain('.retryOnConnectionFailure(false)');
+  expect(first).toContain('request.method == "POST"');
+  expect(first).toContain('override fun isOneShot() = true');
+  expect(first.indexOf('OkHttpClientProvider.setOkHttpClientFactory')).toBeLessThan(
+    first.indexOf('loadReactNative(this)')
+  );
+  expect(first).toContain('preserveUnrelatedInitialization()');
+  expect(first).toContain('useDevSupport = BuildConfig.DEBUG');
+  expect(await regenerateMainApplication(first)).toBe(first);
+});

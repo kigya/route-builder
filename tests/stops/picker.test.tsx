@@ -1,4 +1,8 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { KeyboardAvoidingView, SectionList } from 'react-native';
+import type { SectionListProps } from 'react-native';
+import type { Stop } from '@/api/types';
+import { AppShell } from '@/components/AppShell';
 import { memoryStorage } from '../route/storageFixture';
 import { groupStops } from '@/features/stops/groupStops';
 import { almond, makeApi, north, numeric, press, renderPicker, savedDraft } from './fixtures';
@@ -144,4 +148,38 @@ test('a failed autosave can be retried while keeping the current selection', asy
   await press('Retry saving');
   expect(screen.queryByText('Your changes could not be saved on this device.')).toBeNull();
   expect(memory.read()).toContain('"id":"north"');
+});
+
+test('alphabet jumps target the first row, avoiding native sticky headers measured at offset zero', async () => {
+  const jump = jest.spyOn(SectionList.prototype, 'scrollToLocation').mockImplementation(() => {});
+  const view = await renderPicker();
+  await press('Jump to N');
+  expect(jump).toHaveBeenLastCalledWith({
+    sectionIndex: 1,
+    itemIndex: 1,
+    viewOffset: 28,
+    animated: true,
+  });
+  const list = view.UNSAFE_getByType(SectionList).props as SectionListProps<Stop>;
+  await act(async () => {
+    list.onScrollToIndexFailed?.({
+      index: 5,
+      averageItemLength: 80,
+      highestMeasuredFrameIndex: 2,
+    });
+    await jest.advanceTimersByTimeAsync(100);
+  });
+  expect(jump).toHaveBeenCalledTimes(2);
+  expect(jump).toHaveBeenLastCalledWith({
+    sectionIndex: 1,
+    itemIndex: 1,
+    viewOffset: 28,
+    animated: true,
+  });
+  jump.mockRestore();
+});
+
+test('search keyboard avoidance includes the shell so its footer shares screen coordinates', async () => {
+  const view = await renderPicker();
+  expect(view.UNSAFE_getByType(KeyboardAvoidingView).findByType(AppShell)).toBeTruthy();
 });

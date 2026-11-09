@@ -41,6 +41,61 @@ function withAndroidTesting(config) {
         'context = applicationContext,\n      useDevSupport = BuildConfig.DEBUG,'
       );
     }
+    const imports = [
+      'import com.facebook.react.modules.network.OkHttpClientProvider',
+      'import okhttp3.RequestBody',
+      'import okio.BufferedSink',
+    ];
+    for (const line of imports) {
+      if (!mod.modResults.contents.includes(line)) {
+        mod.modResults.contents = mod.modResults.contents.replace(
+          /(package [^\n]+\n)/,
+          `$1\n${line}\n`
+        );
+      }
+    }
+    const start = '    // @generated begin route-builder-network-policy';
+    const end = '    // @generated end route-builder-network-policy';
+    const networkPolicy = `${start}
+    OkHttpClientProvider.setOkHttpClientFactory {
+      OkHttpClientProvider.createClientBuilder(applicationContext)
+        .retryOnConnectionFailure(false)
+        .addInterceptor { chain ->
+          val request = chain.request()
+          val body = request.body
+          // A POST body is one-shot: this also blocks HTTP 503/307/308 follow-ups.
+          val guarded = if (request.method == "POST" && body != null) {
+            request.newBuilder().method(request.method, object : RequestBody() {
+              override fun contentType() = body.contentType()
+              override fun contentLength() = body.contentLength()
+              override fun isOneShot() = true
+              override fun writeTo(sink: BufferedSink) = body.writeTo(sink)
+            }).build()
+          } else request
+          chain.proceed(guarded)
+        }
+        .build()
+    }
+${end}`;
+    const existingStart = mod.modResults.contents.indexOf(start);
+    if (existingStart !== -1) {
+      const existingEnd = mod.modResults.contents.indexOf(end, existingStart);
+      if (existingEnd === -1) throw new Error('Incomplete generated network policy');
+      mod.modResults.contents =
+        mod.modResults.contents.slice(0, existingStart) +
+        networkPolicy +
+        mod.modResults.contents.slice(existingEnd + end.length);
+    } else {
+      if (!mod.modResults.contents.includes('    super.onCreate()')) {
+        throw new Error(
+          'Unsupported MainApplication: cannot configure network policy before startup'
+        );
+      }
+      mod.modResults.contents = mod.modResults.contents.replace(
+        '    super.onCreate()',
+        `    super.onCreate()\n${networkPolicy}`
+      );
+    }
     return mod;
   });
   config = withAndroidManifest(config, (mod) => {
