@@ -120,3 +120,25 @@ it.each([
 ])('omits a malformed photo authority %s without relying on DOM URL', (url) => {
   expect(decodePhotos({ items: [{ id: 'p1', url, tag: 'entrance' }] })).toEqual([]);
 });
+
+it.each([
+  'http://999.999.999.999/a.jpg',
+  'http://127.0.0.999/a.jpg',
+  'https://256.0.0.1/a.jpg',
+  'https://127.0.0/a.jpg',
+  'https://127.0.0.1.2/a.jpg',
+  'https://127.0.0.09/a.jpg',
+])('omits a photo whose numeric IPv4 authority is invalid: %s', (url) => {
+  expect(decodePhotos({ items: [{ id: 'p1', url, tag: 'entrance' }] })).toEqual([]);
+});
+
+it.each([
+  'http://127.0.0.1/a.jpg',
+  'https://0.0.0.0/a.jpg',
+  'https://255.255.255.255:8443/a.jpg',
+  'https://images.example.org/a.jpg',
+])('retains a photo with a valid IPv4 or hostname authority: %s', (url) => {
+  expect(decodePhotos({ items: [{ id: 'p1', url, tag: 'entrance' }] })).toEqual([
+    { id: 'p1', url, tag: 'entrance' },
+  ]);
+});

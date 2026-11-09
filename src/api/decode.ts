@@ -48,9 +48,17 @@ function photoUrl(value: unknown): value is string {
   const match = /^https?:\/\/([a-z0-9.-]+)(?::(\d{1,5}))?(?:[/?#][^\s\\]*)?$/i.exec(value);
   const host = match?.[1];
   const port = match?.[2];
+  if (host === undefined) return false;
+  const labels = host.split('.');
+  // Numeric authorities must be four decimal octets, without ambiguous leading zeros.
+  if (
+    /^[0-9.]+$/.test(host) &&
+    (labels.length !== 4 ||
+      !labels.every((label) => /^(0|[1-9]\d{0,2})$/.test(label) && Number(label) <= 255))
+  )
+    return false;
   return (
-    host !== undefined &&
-    host.split('.').every((label) => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label)) &&
+    labels.every((label) => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label)) &&
     (port === undefined || Number(port) <= 65535)
   );
 }
