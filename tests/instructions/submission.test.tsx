@@ -7,7 +7,10 @@ import type { RouteDraft } from '@/features/route/model';
 import { deferred, memoryStorage } from '../route/storageFixture';
 import { instructionApi, north, press, renderInstructions, savedDraft } from './fixtures';
 jest.mock('expo-router', () => ({ router: { navigate: jest.fn(), dismissTo: jest.fn() } }));
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.mocked(AccessibilityInfo.isReduceMotionEnabled).mockResolvedValue(false);
+});
 const items = [{ stop_id: north.id, packages: 2, instructions: 'Side door' }];
 
 test('sending locks edits, clear, removal and Finish; repeated taps send once', async () => {
@@ -171,4 +174,30 @@ test('a completed attempt dismisses the keyboard and reveals the result at the t
   scroll.mockRestore();
   dismiss.mockRestore();
   motion.mockRestore();
+});
+
+test('rejected acknowledged retry keeps uncertain warning, locked edits and fresh acknowledgment after restore', async () => {
+  const api = instructionApi();
+  api.createRoute
+    .mockRejectedValueOnce(new Error('Lost response'))
+    .mockRejectedValueOnce(
+      new ApiError('rate-limit', 'Too many requests', { outcome: 'definitive', status: 429 })
+    );
+  const view = await renderInstructions(savedDraft(), api);
+  await press('Finish instructions');
+  await press('Review retry risk');
+  await press('I understand a retry may create a duplicate route');
+  await press('Retry and accept duplicate risk');
+  expect(screen.getByText('Route creation could not be confirmed')).toBeTruthy();
+  expect(screen.queryByText('Route was not created. Your instructions are preserved.')).toBeNull();
+  expect(screen.getByLabelText('Instructions for North Cafe')).toHaveProp('editable', false);
+  expect(screen.queryByLabelText('Retry route creation')).toBeNull();
+  await press('Review retry risk');
+  expect(screen.getByLabelText('Retry and accept duplicate risk')).toBeDisabled();
+  await press('Cancel');
+  view.unmount();
+  await renderInstructions(savedDraft(), api, view.storage);
+  expect(screen.getByText('Route creation could not be confirmed')).toBeTruthy();
+  expect(screen.getByLabelText('Instructions for North Cafe')).toHaveProp('editable', false);
+  expect(api.createRoute.mock.calls).toHaveLength(2);
 });

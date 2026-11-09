@@ -1,7 +1,8 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import type { FlatListProps } from 'react-native';
 import type { DraftStop, RouteDraft } from '@/features/route/model';
-import { AccessibilityInfo, Animated, FlatList } from 'react-native';
+import { AccessibilityInfo, Animated, FlatList, KeyboardAvoidingView } from 'react-native';
+import { AppShell } from '@/components/AppShell';
 import { router } from 'expo-router';
 import { almond, north, press, renderInstructions, savedDraft } from './fixtures';
 jest.mock('expo-router', () => ({ router: { navigate: jest.fn(), dismissTo: jest.fn() } }));
@@ -152,4 +153,12 @@ test('unmeasured first-invalid card retries exact scrolling and cleans up on unm
   expect(scroll).toHaveBeenCalledTimes(2);
   scroll.mockRestore();
   jest.useRealTimers();
+});
+
+test('keyboard avoidance includes the shell header and footer in the screen coordinate space', async () => {
+  const view = await renderInstructions(savedDraft());
+  const avoider = view.UNSAFE_getByType(KeyboardAvoidingView);
+  // Native keyboard metrics use screen coordinates. A nested avoider under the shell
+  // measures local y=0 below the header and undercounts the overlap on Android.
+  expect(avoider.findByType(AppShell)).toBeTruthy();
 });

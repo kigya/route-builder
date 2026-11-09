@@ -79,7 +79,10 @@ export function createSubmitter(
         error instanceof Error ? error : new Error('Route creation could not be confirmed.');
       const submission =
         error instanceof ApiError && error.outcome === 'definitive'
-          ? { status: 'idle' as const }
+          ? snapshot.submission.status === 'uncertain'
+            ? // A rejected retry says nothing about the earlier request's outcome.
+              snapshot.submission
+            : { status: 'idle' as const }
           : { status: 'uncertain' as const, attemptId, items };
       result = { draft: { ...snapshot, submission }, error: failure };
     }

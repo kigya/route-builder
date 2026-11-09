@@ -83,8 +83,8 @@ export function InstructionsScreen() {
     void route.submit();
   }
   return (
-    <AppShell active="instructions">
-      <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+    <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+      <AppShell active="instructions">
         <DraftRecovery />
         <FlatList
           ref={list}
@@ -182,7 +182,7 @@ export function InstructionsScreen() {
             </Button>
           </View>
         )}
-      </KeyboardAvoidingView>
-    </AppShell>
+      </AppShell>
+    </KeyboardAvoidingView>
   );
 }

@@ -355,3 +355,32 @@ test('a failed acknowledged retry marker cannot reopen a stale idle draft for ca
   expect((await submitter.submit(draft())).draft.submission.status).toBe('uncertain');
   expect(posts).toBe(1);
 });
+
+test.each([400, 422, 429])(
+  'definitive HTTP %s on acknowledged retry preserves earlier uncertainty across relaunch',
+  async (status) => {
+    let posts = 0;
+    const fetch: FetchImplementation = () => {
+      posts++;
+      return posts === 1
+        ? Promise.reject(new Error('Lost response'))
+        : Promise.resolve(response(status, {}));
+    };
+    const { submitter, storage } = await setup(fetch);
+    const first = await submitter.submit(draft());
+    const retried = await submitter.retryUncertain(first.draft, { acknowledgeDuplicateRisk: true });
+    expect(retried.draft.submission).toEqual(first.draft.submission);
+    await submitter.submit(retried.draft);
+    expect(posts).toBe(2);
+    const relaunchedStore = createDraftStore(storage);
+    const restored = await relaunchedStore.load();
+    if (restored.status !== 'loaded') throw new Error('Expected draft');
+    expect(restored.draft.submission).toEqual(first.draft.submission);
+    const relaunched = createSubmitter(
+      createApi({ baseURL: 'http://test', fetch }),
+      relaunchedStore
+    );
+    await relaunched.submit(restored.draft);
+    expect(posts).toBe(2);
+  }
+);
