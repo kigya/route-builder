@@ -168,3 +168,56 @@ test('submit freezes edits synchronously and keeps success until explicit new ro
   expect(result.current.draft.stops).toEqual([]);
   expect(result.current.canEdit).toBe(true);
 });
+test('restore requested during reset cannot later overwrite a new persisted edit', async () => {
+  const memory = memoryStorage(JSON.stringify(draft()));
+  const resetWrite = deferred<void>();
+  const delayedRead = deferred<string | null>();
+  let reads = 0;
+  let writes = 0;
+  const storage = {
+    ...memory,
+    getItem: (key: string) => {
+      reads++;
+      return reads === 1 ? memory.getItem(key) : delayedRead.promise;
+    },
+    setItem: async (key: string, value: string) => {
+      writes++;
+      if (writes === 1) await resetWrite.promise;
+      await memory.setItem(key, value);
+    },
+  };
+  const api = noNetwork();
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <RouteProvider api={api} storage={storage}>
+      {children}
+    </RouteProvider>
+  );
+  const { result } = renderHook(useRouteDraft, { wrapper });
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  let overlappingRestore = Promise.resolve();
+  await act(async () => {
+    const reset = result.current.reset({ acknowledgeDataLoss: true });
+    overlappingRestore = result.current.retryRestore();
+    result.current.dispatch({ type: 'selectStop', stop: stop('during-reset') });
+    resetWrite.resolve();
+    expect(await reset).toBe(true);
+  });
+  expect(result.current.ready).toBe(true);
+  expect(result.current.draft.stops).toEqual([]);
+  const resetSnapshot = memory.read();
+  act(() => {
+    result.current.dispatch({ type: 'selectStop', stop: stop('south') });
+    result.current.dispatch({ type: 'setInstructions', id: 'south', text: 'Keep the new route' });
+  });
+  await waitFor(() => expect(result.current.saving).toBe(false));
+  await act(async () => {
+    delayedRead.resolve(resetSnapshot);
+    await overlappingRestore;
+  });
+  const expected = [{ stop: stop('south'), packages: 1, instructions: 'Keep the new route' }];
+  expect(result.current.draft.stops).toEqual(expected);
+  expect(result.current.storageError).toBeUndefined();
+  const restored = await createDraftStore(memory).load();
+  if (restored.status !== 'loaded') throw new Error('Expected a saved draft');
+  expect(restored.draft.stops).toEqual(expected);
+});

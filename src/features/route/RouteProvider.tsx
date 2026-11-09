@@ -70,7 +70,6 @@ function createSession(api: RouteApi, storage: DraftStorage) {
   function restore(): Promise<void> {
     if (restoring) return restoring;
     if (state.status === 'ready') return Promise.resolve();
-    update({ status: 'restoring', storageError: undefined });
     restoring = store
       .load()
       .then((loaded) => {
@@ -90,6 +89,7 @@ function createSession(api: RouteApi, storage: DraftStorage) {
       .finally(() => {
         restoring = undefined;
       });
+    update({ status: 'restoring', storageError: undefined });
     return restoring;
   }
   async function persist(draft: RouteDraft): Promise<boolean> {
@@ -129,27 +129,36 @@ function createSession(api: RouteApi, storage: DraftStorage) {
       });
     return submitting;
   }
-  async function reset(confirmation: { acknowledgeDataLoss: true }): Promise<boolean> {
-    if (state.isSubmitting || state.status === 'restoring') return false;
+  function reset(confirmation: { acknowledgeDataLoss: true }): Promise<boolean> {
+    if (restoring || state.isSubmitting || state.status === 'restoring')
+      return Promise.resolve(false);
     const previousStatus = state.status;
-    update({ status: 'restoring', saving: true });
-    try {
-      const draft = await store.discardAndReset(confirmation);
-      submitter.reset();
-      update({
-        status: 'ready',
-        draft,
-        storageError: undefined,
-        recoveryReason: undefined,
-        result: undefined,
+    const operation = store
+      .discardAndReset(confirmation)
+      .then((draft) => {
+        submitter.reset();
+        update({
+          status: 'ready',
+          draft,
+          storageError: undefined,
+          recoveryReason: undefined,
+          result: undefined,
+        });
+        return true;
+      })
+      .catch((error: unknown) => {
+        update({ status: previousStatus, storageError: errorFrom(error) });
+        return false;
+      })
+      .finally(() => {
+        restoring = undefined;
+        update({ saving: pendingSaves > 0 });
       });
-      return true;
-    } catch (error) {
-      update({ status: previousStatus, storageError: errorFrom(error) });
-      return false;
-    } finally {
-      update({ saving: pendingSaves > 0 });
-    }
+    // Reset and restore own the same recovery lock. A retry during reset waits
+    // for this write instead of starting a read that could replace later edits.
+    restoring = operation.then(() => undefined);
+    update({ status: 'restoring', saving: true });
+    return operation;
   }
   const actions: RouteActions = {
     dispatch(action) {
