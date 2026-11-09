@@ -1,14 +1,9 @@
 import type { ReactElement } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  ScrollView,
-  SectionList,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, SectionList, View } from 'react-native';
 import { Search, X } from 'lucide-react-native';
 import type { Stop } from '@/api/types';
+import { KeyboardScreen } from '@/components/keyboard-screen';
 import { AppShell, useRouteNavigation } from '@/components/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,7 +62,7 @@ export function StopsScreen(): ReactElement {
   const count = draft.stops.length;
   const continueLabel = `Continue (${count} ${count === 1 ? 'stop' : 'stops'})`;
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior="height">
+    <KeyboardScreen>
       <AppShell active="stops">
         <DraftRecovery />
         <View style={{ paddingHorizontal: 14, paddingTop: 12, gap: 10, paddingBottom: 8 }}>
@@ -360,6 +355,6 @@ export function StopsScreen(): ReactElement {
           />
         )}
       </AppShell>
-    </KeyboardAvoidingView>
+    </KeyboardScreen>
   );
 }

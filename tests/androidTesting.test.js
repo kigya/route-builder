@@ -100,10 +100,41 @@ class MainApplication : Application() {
   expect(first).toContain('.retryOnConnectionFailure(false)');
   expect(first).toContain('request.method == "POST"');
   expect(first).toContain('override fun isOneShot() = true');
+  expect(first).toContain('.addNetworkInterceptor');
+  expect(first).toContain('response.code in 300..399');
+  expect(first).toContain('removeHeader("Location")');
   expect(first.indexOf('OkHttpClientProvider.setOkHttpClientFactory')).toBeLessThan(
     first.indexOf('loadReactNative(this)')
   );
   expect(first).toContain('preserveUnrelatedInitialization()');
   expect(first).toContain('useDevSupport = BuildConfig.DEBUG');
   expect(await regenerateMainApplication(first)).toBe(first);
+});
+
+async function regenerateMainActivity(contents) {
+  const config = withAndroidTesting({ name: 'Fixture', slug: 'fixture' });
+  const result = await config.mods.android.mainActivity({
+    ...config,
+    modResults: { language: 'kt', contents },
+    modRequest: { platform: 'android', modName: 'mainActivity' },
+  });
+  return result.modResults.contents;
+}
+
+test('adds one activity-owned visible-IME height observer and releases it on destruction', async () => {
+  const original = `package com.example.fixture
+class MainActivity : ReactActivity() {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(null)
+  }
+  fun preserveDelegate() = true
+}`;
+  const first = await regenerateMainActivity(original);
+  expect(first).toContain('viewTreeObserver.addOnGlobalLayoutListener');
+  expect(first).toContain('visible && routeKeyboardVisible && frame.bottom != routeKeyboardBottom');
+  expect(first).toContain('removeOnGlobalLayoutListener');
+  expect(first).toContain('super.onCreate(null)\n    observeRouteKeyboardHeight()');
+  expect(first).toContain('fun preserveDelegate() = true');
+  expect(first.match(/override fun onDestroy/g)).toHaveLength(1);
+  expect(await regenerateMainActivity(first)).toBe(first);
 });

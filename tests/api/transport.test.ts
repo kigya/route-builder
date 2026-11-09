@@ -218,3 +218,16 @@ it('aborts an in-flight GET immediately when the caller cancels', async () => {
   controller.abort();
   await result;
 });
+
+it.each([301, 302, 303, 307, 308])(
+  'keeps unexpected POST HTTP %i uncertain without a retry',
+  async (status) => {
+    const { transport, calls } = setup([response(status), response(201)]);
+    await expect(transport.request('POST', '/v1/routes', { body: {} })).rejects.toMatchObject({
+      kind: 'http',
+      outcome: 'uncertain',
+      status,
+    });
+    expect(calls).toHaveLength(1);
+  }
+);

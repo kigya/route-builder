@@ -130,7 +130,7 @@ export function InstructionCard({
       <Input
         ref={inputRef}
         accessibilityLabel={`Instructions for ${entry.stop.name}`}
-        accessibilityHint="Required. Up to 200 UTF-16 units."
+        accessibilityHint="Required. Maximum length: 200."
         multiline
         editable={canEdit}
         value={entry.instructions}
@@ -150,7 +150,7 @@ export function InstructionCard({
         </Text>
       )}
       <Text style={{ color: colors.muted, fontSize: 12, fontVariant: ['tabular-nums'] }}>
-        {entry.instructions.length}/200 UTF-16 units
+        {entry.instructions.length}/200
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
         <Button

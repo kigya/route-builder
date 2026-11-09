@@ -192,7 +192,7 @@ test.each([400, 422, 429])('definitive HTTP %s persists editable idle draft', as
   expect(result.error?.name).toBe('ApiError');
   expect(await store.load()).toEqual({ status: 'loaded', draft: draft() });
 });
-test.each([500, 503])('HTTP %s remains uncertain without automatic retry', async (status) => {
+test.each([307, 500, 503])('HTTP %s remains uncertain without automatic retry', async (status) => {
   let posts = 0;
   const { submitter } = await setup(() => {
     posts++;

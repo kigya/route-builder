@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, FlatList, Keyboard, KeyboardAvoidingView, View } from 'react-native';
+import { AccessibilityInfo, FlatList, Keyboard, View } from 'react-native';
 import type { TextInput } from 'react-native';
+import { KeyboardScreen } from '@/components/keyboard-screen';
 import { AppShell, useRouteNavigation } from '@/components/AppShell';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
@@ -83,7 +84,7 @@ export function InstructionsScreen() {
     void route.submit();
   }
   return (
-    <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+    <KeyboardScreen>
       <AppShell active="instructions">
         <DraftRecovery />
         <FlatList
@@ -183,6 +184,6 @@ export function InstructionsScreen() {
           </View>
         )}
       </AppShell>
-    </KeyboardAvoidingView>
+    </KeyboardScreen>
   );
 }

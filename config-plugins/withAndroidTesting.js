@@ -4,6 +4,7 @@ const {
   withDangerousMod,
   withGradleProperties,
   withMainApplication,
+  withMainActivity,
   withBaseMod,
 } = require('expo/config-plugins');
 const fs = require('node:fs/promises');
@@ -74,6 +75,14 @@ function withAndroidTesting(config) {
           } else request
           chain.proceed(guarded)
         }
+        .addNetworkInterceptor { chain ->
+          val response = chain.proceed(chain.request())
+          // Expose POST redirects to JavaScript instead of hiding the original
+          // outcome behind a follow-up GET (301/302/303) or POST (307/308).
+          if (chain.request().method == "POST" && response.code in 300..399) {
+            response.newBuilder().removeHeader("Location").build()
+          } else response
+        }
         .build()
     }
 ${end}`;
@@ -96,6 +105,110 @@ ${end}`;
         `    super.onCreate()\n${networkPolicy}`
       );
     }
+    return mod;
+  });
+  config = withMainActivity(config, (mod) => {
+    if (mod.modResults.language !== 'kt') throw new Error('Unsupported MainActivity language');
+    let contents = mod.modResults.contents;
+    const imports = [
+      'import android.os.Build',
+      'import android.graphics.Rect',
+      'import android.view.View',
+      'import android.view.ViewTreeObserver',
+      'import android.view.WindowInsets',
+      'import com.facebook.react.ReactApplication',
+      'import com.facebook.react.bridge.Arguments',
+      'import com.facebook.react.modules.core.DeviceEventManagerModule',
+      'import com.facebook.react.uimanager.PixelUtil',
+    ];
+    for (const line of imports) {
+      if (!contents.includes(line))
+        contents = contents.replace(/(package [^\n]+\n)/, `$1\n${line}\n`);
+    }
+    const start = '  // @generated begin route-builder-keyboard-height';
+    const end = '  // @generated end route-builder-keyboard-height';
+    const previous = contents.indexOf(start);
+    if (previous !== -1) {
+      const previousEnd = contents.indexOf(end, previous);
+      if (previousEnd === -1) throw new Error('Incomplete generated keyboard height observer');
+      contents =
+        contents.slice(0, previous) +
+        contents.slice(
+          previousEnd + end.length + (contents[previousEnd + end.length] === '\n' ? 1 : 0)
+        );
+    }
+    if (contents.includes('override fun onDestroy'))
+      throw new Error('Unsupported MainActivity onDestroy override');
+    if (
+      !contents.includes('  override fun onCreate') ||
+      !contents.includes('super.onCreate(null)')
+    ) {
+      throw new Error('Unsupported MainActivity startup');
+    }
+    const observer = `${start}
+  private var routeKeyboardObserver: ViewTreeObserver.OnGlobalLayoutListener? = null
+  private var routeKeyboardDecor: View? = null
+  private var routeKeyboardVisible = false
+  private var routeKeyboardBottom = 0
+
+  private fun observeRouteKeyboardHeight() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
+    val view = window.decorView
+    routeKeyboardDecor = view
+    val listener = ViewTreeObserver.OnGlobalLayoutListener {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val insets = view.rootWindowInsets
+        if (insets != null) {
+          val visible = insets.isVisible(WindowInsets.Type.ime())
+          val frame = Rect()
+          view.getWindowVisibleDisplayFrame(frame)
+          // RN 0.85 emits show/hide on API 30+, but misses an already-visible
+          // IME changing height (for example the expanded emoji panel).
+          if (visible && routeKeyboardVisible && frame.bottom != routeKeyboardBottom) {
+            val context = (application as ReactApplication).reactHost?.currentReactContext
+            if (context != null && context.hasActiveReactInstance()) {
+              val height = insets.getInsets(WindowInsets.Type.ime()).bottom -
+                insets.getInsets(WindowInsets.Type.systemBars()).bottom
+              val coordinates = Arguments.createMap().apply {
+                putDouble("screenY", PixelUtil.toDIPFromPixel(frame.bottom.toFloat()).toDouble())
+                putDouble("screenX", PixelUtil.toDIPFromPixel(frame.left.toFloat()).toDouble())
+                putDouble("width", PixelUtil.toDIPFromPixel(frame.width().toFloat()).toDouble())
+                putDouble("height", PixelUtil.toDIPFromPixel(height.toFloat()).toDouble())
+              }
+              val event = Arguments.createMap().apply {
+                putMap("endCoordinates", coordinates)
+                putString("easing", "keyboard")
+                putDouble("duration", 0.0)
+              }
+              context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit("keyboardDidShow", event)
+            }
+          }
+          routeKeyboardVisible = visible
+          routeKeyboardBottom = frame.bottom
+        }
+      }
+    }
+    routeKeyboardObserver = listener
+    view.viewTreeObserver.addOnGlobalLayoutListener(listener)
+  }
+
+  override fun onDestroy() {
+    routeKeyboardObserver?.let { listener ->
+      routeKeyboardDecor?.viewTreeObserver?.takeIf { it.isAlive }
+        ?.removeOnGlobalLayoutListener(listener)
+    }
+    routeKeyboardObserver = null
+    routeKeyboardDecor = null
+    super.onDestroy()
+  }
+${end}`;
+    contents = contents.replace('  override fun onCreate', `${observer}\n  override fun onCreate`);
+    contents = contents.replace(
+      /super\.onCreate\(null\)(?:\n    observeRouteKeyboardHeight\(\))?/,
+      'super.onCreate(null)\n    observeRouteKeyboardHeight()'
+    );
+    mod.modResults.contents = contents;
     return mod;
   });
   config = withAndroidManifest(config, (mod) => {

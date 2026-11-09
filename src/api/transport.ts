@@ -147,7 +147,11 @@ export function createTransport(options: ApiOptions): Transport {
           if (response.status < 200 || response.status >= 300) {
             const kind = response.status === 400 || response.status === 422 ? 'validation' : 'http';
             const error = new ApiError(kind, `The service returned HTTP ${response.status}.`, {
-              outcome: response.status >= 500 ? 'uncertain' : 'definitive',
+              outcome:
+                response.status >= 500 ||
+                (method === 'POST' && response.status >= 300 && response.status < 400)
+                  ? 'uncertain'
+                  : 'definitive',
               status: response.status,
             });
             return { ok: false, error, retryAfter };

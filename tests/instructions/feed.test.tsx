@@ -1,7 +1,13 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import type { FlatListProps } from 'react-native';
 import type { DraftStop, RouteDraft } from '@/features/route/model';
-import { AccessibilityInfo, Animated, FlatList, KeyboardAvoidingView } from 'react-native';
+import {
+  AccessibilityInfo,
+  Animated,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+} from 'react-native';
 import { AppShell } from '@/components/AppShell';
 import { router } from 'expo-router';
 import { almond, north, press, renderInstructions, savedDraft } from './fixtures';
@@ -25,7 +31,7 @@ test('selected data, UTF-16 counting, persisted typing and per-card clear', asyn
     fireEvent.changeText(screen.getByLabelText('Instructions for North Cafe'), 'Call 😀');
     await Promise.resolve();
   });
-  expect(screen.getByText('7/200 UTF-16 units')).toBeTruthy();
+  expect(screen.getByText('7/200')).toBeTruthy();
   expect((JSON.parse(storage.read()!) as RouteDraft).stops[0]?.instructions).toBe('Call 😀');
   await press('Clear instructions for North Cafe');
   expect(screen.getByLabelText('Instructions for North Cafe')).toHaveProp('value', '');
@@ -161,4 +167,38 @@ test('keyboard avoidance includes the shell header and footer in the screen coor
   // Native keyboard metrics use screen coordinates. A nested avoider under the shell
   // measures local y=0 below the header and undercounts the overlap on Android.
   expect(avoider.findByType(AppShell)).toBeTruthy();
+});
+
+test('keyboard hide releases avoidance even when Android reports a nonzero hidden keyboard position', async () => {
+  jest.useFakeTimers();
+  const subscriptions = jest.spyOn(Keyboard, 'addListener');
+  const view = await renderInstructions(savedDraft());
+  const field = screen.getByLabelText('Instructions for North Cafe');
+  const emit = async (
+    name: 'keyboardDidShow' | 'keyboardDidHide',
+    screenY: number,
+    height: number
+  ) => {
+    await act(async () => {
+      for (const [type, listener] of [...subscriptions.mock.calls]) {
+        if (type === name)
+          listener({
+            duration: 0,
+            easing: 'keyboard',
+            endCoordinates: { screenX: 0, screenY, width: 360, height },
+            startCoordinates: { screenX: 0, screenY: 820, width: 360, height: 0 },
+            isEventFromThisApp: true,
+          });
+      }
+      await jest.advanceTimersByTimeAsync(200);
+    });
+  };
+  await emit('keyboardDidShow', 517, 303);
+  expect(view.UNSAFE_getByType(KeyboardAvoidingView).props.enabled ?? true).toBe(true);
+  await emit('keyboardDidHide', 738, 0);
+  expect(view.UNSAFE_getByType(KeyboardAvoidingView).props.enabled).toBe(false);
+  await emit('keyboardDidShow', 517, 303);
+  expect(view.UNSAFE_getByType(KeyboardAvoidingView).props.enabled).toBe(true);
+  expect(screen.getByLabelText('Instructions for North Cafe')).toBe(field);
+  expect(field).toHaveProp('value', 'Side door');
 });
