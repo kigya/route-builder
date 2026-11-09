@@ -14,3 +14,14 @@
 /skills-lock.json
 /.worktrees/
 /.superpowers/
+
+/node_modules/
+/.expo/
+/android/
+/ios/
+/coverage/
+/output/
+/.playwright-cli/
+/dist/
+expo-env.d.ts
+*.log
