@@ -1,4 +1,5 @@
 import '../global.css';
+import { RouteProvider } from '@/features/route/RouteProvider';
 import { PortalHost } from '@rn-primitives/portal';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -11,10 +12,10 @@ I18nManager.forceRTL(false);
 export { ErrorBoundary } from 'expo-router';
 export default function RootLayout(): ReactElement {
   return (
-    <>
+    <RouteProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#EEF1F3' } }} />
       <PortalHost />
-    </>
+    </RouteProvider>
   );
 }

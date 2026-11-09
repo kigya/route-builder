@@ -12,6 +12,7 @@
     "prebuild": "expo prebuild --platform android --no-install"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@rn-primitives/dialog": "^1.5.2",
     "@rn-primitives/portal": "~1.4.0",
     "@rn-primitives/slot": "^1.5.2",
