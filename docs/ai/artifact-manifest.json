@@ -1,15 +1,15 @@
 {
-  "sourceRevision": "0199f780f5befa1383795ab1c47b12328973c12b",
+  "sourceRevision": "1bdfa18657d1fbb604861fd657692fefcd5b0b99",
   "apk": {
     "name": "route-builder-standalone-debug.apk",
-    "sha256": "b6317104bd6ba07ce35908345250339b7427b9a56d1748e4fac2d3f70fcdc638",
-    "bytes": 106518905
+    "sha256": "d1522259e0a22d591eacce20954d7562b8ad4383b7c647e1b7314f5081603e01",
+    "bytes": 106518945
   },
   "video": {
     "name": "route-builder-demo.mp4",
-    "sha256": "5d048be7e62c5ba925bf0d1a89cfdfa8c4b747dfcb645af7b260c861ccdfd4b7",
-    "bytes": 2876585,
-    "durationSeconds": 87.284956,
+    "sha256": "49dd89345153de9b5b31001197410ce0de7a8f07199f97c852f24cddcc78a0dc",
+    "bytes": 3632219,
+    "durationSeconds": 85.711356,
     "width": 720,
     "height": 1640,
     "codec": "h264",
@@ -33,7 +33,7 @@
   },
   "checks": {
     "suites": 18,
-    "tests": 237,
+    "tests": 239,
     "lint": "passed",
     "typecheck": "passed",
     "nativeAssemble": "SUCCESS",
@@ -43,7 +43,7 @@
     "stop_id": "stp_1020",
     "packages": 2,
     "instructions": "Leave at reception",
-    "routeId": "rt_2004",
+    "routeId": "rt_2005",
     "status": "draft",
     "observedPosts": 1
   }

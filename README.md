@@ -9,8 +9,6 @@ Use Node **22.23.2** (`.nvmrc` / `.node-version`) and npm. Native builds require
 ```sh
 git clone https://github.com/kigya/route-builder.git
 cd route-builder
-# Until PR #1 is merged:
-git switch codex/route-builder
 npm ci
 node mock/server.js 4000
 ```
@@ -57,4 +55,4 @@ This runs ESLint, strict TypeScript, and Jest. CI jobs `quality` and `android-bu
 
 Supported configuration: Android **8.0 / API 26** or later, English, LTR, portrait phones. Physical acceptance uses a Xiaomi **25028PC03G**, Android **15**, **360 dp** width. Other Android versions have not been tested physically. Android system sans is the documented fallback for the reference's Heebo font.
 
-See [verification](docs/ai/verification.md) for the tested revision, APK checksum, physical results, video status, and unresolved dependency/toolchain risks. Publication links will be added only after the controller completes the final review, CI, merge, and release gates. [Decisions](DECISIONS.md), [AI process](AI_PROCESS.md), and [review history](docs/ai/review.md) explain the implementation and remaining gates.
+The final local candidate uses production source `1bdfa18`: 239 tests passed, standalone assembly/lint passed, and the original physical-device recording lasts 85.711 seconds. See [verification](docs/ai/verification.md) for checksums, physical results and remaining dependency/toolchain risks. Publication links will be added only after the controller completes the final review, CI, merge, and release gates. [Decisions](DECISIONS.md), [AI process](AI_PROCESS.md), and [review history](docs/ai/review.md) explain the implementation and remaining gates.
