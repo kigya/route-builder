@@ -130,6 +130,67 @@ test('failed autosave surfaces an error and retry saves the current draft', asyn
     draft: draft('Keep me'),
   });
 });
+test.each([false, true])(
+  'suppressed submit preserves current receipt durability after repair (new failure: %s)',
+  async (failAgain) => {
+    const memory = memoryStorage(JSON.stringify(draft()));
+    let failure = 'Receipt full';
+    const storage = {
+      ...memory,
+      setItem: (key: string, value: string) =>
+        value.includes('"status":"succeeded"') && failure
+          ? Promise.reject(new Error(failure))
+          : memory.setItem(key, value),
+    };
+    let posts = 0;
+    const api = createApi({
+      baseURL: 'http://test',
+      fetch: () => {
+        posts++;
+        return Promise.resolve({
+          status: 201,
+          headers: { get: () => null },
+          json: () => Promise.resolve(route),
+        });
+      },
+    });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <RouteProvider api={api} storage={storage}>
+        {children}
+      </RouteProvider>
+    );
+    const { result } = renderHook(useRouteDraft, { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => {
+      await result.current.submit();
+    });
+    expect(result.current.storageError?.message).toBe('Receipt full');
+    expect(result.current.draft.submission).toEqual({ status: 'succeeded', route });
+    failure = '';
+    await act(async () => {
+      expect(await result.current.retrySave()).toBe(true);
+    });
+    expect(result.current.storageError).toBeUndefined();
+    expect(await createDraftStore(storage).load()).toEqual({
+      status: 'loaded',
+      draft: { ...draft(), submission: { status: 'succeeded', route } },
+    });
+    if (failAgain) {
+      failure = 'New storage failure';
+      await act(async () => {
+        expect(await result.current.retrySave()).toBe(false);
+      });
+    }
+    await act(async () => {
+      await result.current.submit();
+    });
+    expect(result.current.storageError?.message).toBe(
+      failAgain ? 'New storage failure' : undefined
+    );
+    expect(result.current.canEdit).toBe(false);
+    expect(posts).toBe(1);
+  }
+);
 test('submit freezes edits synchronously and keeps success until explicit new route', async () => {
   const network = deferred<ReturnType<typeof success>>();
   let posts = 0;

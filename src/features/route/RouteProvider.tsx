@@ -118,9 +118,15 @@ function createSession(api: RouteApi, storage: DraftStorage) {
     const request = confirmation
       ? submitter.retryUncertain(state.draft, confirmation)
       : submitter.submit(state.draft);
+    // Cached terminal results describe the old attempt, not current storage durability.
+    const startedAttempt = submitter.isSubmitting;
     submitting = request
       .then((result) => {
-        update({ draft: result.draft, result, storageError: result.storageError });
+        update({
+          draft: result.draft,
+          result,
+          storageError: startedAttempt ? result.storageError : state.storageError,
+        });
         return result;
       })
       .finally(() => {

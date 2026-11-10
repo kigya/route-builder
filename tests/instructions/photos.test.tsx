@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { DeliveryPhoto } from '@/api/types';
 import { DeliveryPhotos } from '@/features/instructions/delivery-photos';
+import { createDraftStore } from '@/features/route/persistence';
 import { deferred } from '../route/storageFixture';
-import { instructionApi, press, renderInstructions, savedDraft } from './fixtures';
+import { almond, north, instructionApi, press, renderInstructions, savedDraft } from './fixtures';
 jest.mock('expo-router', () => ({ router: { navigate: jest.fn(), dismissTo: jest.fn() } }));
 
 test('null/empty photo URLs never render and image errors have a local fallback', async () => {
@@ -90,15 +91,29 @@ test('unmount aborts pending request, ignores completion, and schedules no fetch
 test('removed card aborts request and late failure does not reappear or alter other text', async () => {
   const api = instructionApi();
   const pending = deferred<DeliveryPhoto[]>();
-  api.getPhotos.mockImplementation(() => pending.promise);
-  await renderInstructions(savedDraft(), api);
-  const signal = api.getPhotos.mock.calls[0]?.[1];
+  api.getPhotos.mockImplementation((id) =>
+    id === 'north' ? pending.promise : Promise.resolve([])
+  );
+  const survivor = { stop: almond, packages: 3, instructions: 'Keep the bakery entrance text' };
+  const initial = savedDraft([{ stop: north, packages: 2, instructions: 'Side door' }, survivor]);
+  initial.mode = 'multi';
+  const { storage } = await renderInstructions(initial, api);
+  const signal = api.getPhotos.mock.calls.find(([id]) => id === 'north')?.[1];
   await press('Remove North Cafe');
   expect(signal?.aborted).toBe(true);
   await act(async () => {
     pending.reject(new Error('late'));
     await Promise.resolve();
   });
-  expect(api.getPhotos.mock.calls).toHaveLength(1);
+  expect(api.getPhotos.mock.calls.filter(([id]) => id === 'north')).toHaveLength(1);
+  expect(screen.queryByLabelText('Instructions for North Cafe')).toBeNull();
   expect(screen.queryByText('Previous delivery photos could not be loaded.')).toBeNull();
+  expect(screen.getByLabelText('Instructions for Almond Patisserie')).toHaveProp(
+    'value',
+    survivor.instructions
+  );
+  expect(await createDraftStore(storage).load()).toEqual({
+    status: 'loaded',
+    draft: { ...initial, stops: [survivor] },
+  });
 });
