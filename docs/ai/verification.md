@@ -83,3 +83,7 @@ The final phone was left on confirmed `rt_2005`. Font scale is restored to 1.0, 
 Independent Task 6 and whole-branch reviews approved the implementation with explicit limits. This final wave corrects all three recorded Minors: stale current storage-error state, the missing surviving-card assertion and the later photo request pair omitted from public evidence. The [photo trace](evidence/photo-lifecycle.jsonl) now orders the 23:33:12.717Z request start, 23:33:13.920517Z completed edit and 23:33:22.727Z response release together. Storage failure/repair is automated provider coverage, not physical full-disk injection.
 
 Controller-owned scoped re-review, final GitHub review/conversation handling, required checks on the exact final head, guarded merge, main CI and publication/download verification remain pending. Release links will be added after publication.
+
+## Delivery evidence
+
+This file records source and physical acceptance before merge. Local whole-branch and scoped fix reviews are complete; the [scoped report](final-fix-review.md) closes all three Minor findings. The release's [delivery verification](https://github.com/kigya/route-builder/releases/download/v1.0.0/release-verification.json) records the final reviewed PR head, merge commit, CI outcomes and public asset checks once those operations finish. This source snapshot does not preclaim them.
