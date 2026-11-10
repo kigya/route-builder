@@ -1,0 +1,95 @@
+{
+  "kit": "Superpowers",
+  "source": "https://github.com/obra/superpowers",
+  "version_note": "No semantic release version is stored in the installed skills metadata. These SHA-256 identifiers pin the actual installed instructions used for this task.",
+  "skills": [
+    {
+      "path": "using-superpowers/SKILL.md",
+      "sha256": "82c5c8866ad7f5dd4440ce66bd7806ba48a2f13771beae5cf112e53f08fe36ba",
+      "installer_computed_hash": "ef8670c2a2d8e2f6ed52d6f3219759903300ca13afc5ec2e25826a735112562b"
+    },
+    {
+      "path": "brainstorming/SKILL.md",
+      "sha256": "2c9ca71f94886f9ca9f4aef055f7cafb3e1a9bdf3aeebf8f4cb547c69405d207",
+      "installer_computed_hash": "b344a85378eb5e5da192bceb0f9c0c15a4820a3ee8b5ad867e3a70ef3c691e3d"
+    },
+    {
+      "path": "writing-plans/SKILL.md",
+      "sha256": "a6c67c1900064347c2a329990dd3c555657c51c3ec53b259a08aa01a2c26139a",
+      "installer_computed_hash": "c2647b5bf067be353a893e5a39a632cbbeb7ad81e61fa5ae227ece5490029073"
+    },
+    {
+      "path": "using-git-worktrees/SKILL.md",
+      "sha256": "8cfb86f121269e8f7f12361e6795c4f6738828340e28964c9229d365666c9edd",
+      "installer_computed_hash": "48c8a1040e378e0cb7208107294e3afa9067b9370c3f33b49a443eb6b7528b0d"
+    },
+    {
+      "path": "subagent-driven-development/SKILL.md",
+      "sha256": "1baf70e307bde682c462513c86116333f1f066168c6710f45145bf5f0b00828d",
+      "installer_computed_hash": "8b425d9ea00698e83a5d41c1d23f19bdc60ce2006b1234e419ba868e266000c3"
+    },
+    {
+      "path": "requesting-code-review/SKILL.md",
+      "sha256": "2180e14a448e9410bec88e6646a2d1f0ce7fdd58de27388c1e052e929679d2bc",
+      "installer_computed_hash": "b095ac8c980339436b41de9989328f3f288f2e2a70452df28452bbeb6531d604"
+    },
+    {
+      "path": "finishing-a-development-branch/SKILL.md",
+      "sha256": "8db5a922b242dd4e1bf824cb91c13b3e8d8e8a86d6ceaf7f0774eb9cce909d65",
+      "installer_computed_hash": "4f571e7befb8b0946d9d7770232c818812412e9ab1dfb811f847edfba1fc6275"
+    },
+    {
+      "path": "test-driven-development/SKILL.md",
+      "sha256": "64b03fce4aee5a97a93160cea8111f3ba13a17b7c001db4bd5836d67fd10705d",
+      "installer_computed_hash": "3cfe4ebb6fa7288f668d87880d279c8e48f7a92b63415e296857060f5ce22e05"
+    },
+    {
+      "path": "systematic-debugging/SKILL.md",
+      "sha256": "51c6435d98c83c42c96ba7c35725a0b2c376cd487fb1a4e6bd0ddbe7e33ef202",
+      "installer_computed_hash": "b7b6e98c3bffe371893bdb69845ec61124a65b6a96313dc8d6a2bce4437b13eb"
+    },
+    {
+      "path": "verification-before-completion/SKILL.md",
+      "sha256": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3",
+      "installer_computed_hash": "b529822bdac4b197b180fe12225cff86b930b65910435103c10622df7f041651"
+    }
+  ],
+  "supporting_files": [
+    {
+      "path": "test-driven-development/writing-good-tests.md",
+      "sha256": "51471c853306ff92ca8bb41dcaea05f31c0e46b03651f8f3c99754b7172f4ae1"
+    }
+  ],
+  "documentation_skills": [
+    {
+      "name": "clarity",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "e3940af9124c47e7311c5bbc8db8aebdbd5cead3db705b2ff86c3e52867b9a22"
+        },
+        {
+          "path": "references/edit.md",
+          "sha256": "37ee13563118eb7ff2af3394befbdb8321e8e104962df3de3e15511df4ed17e3"
+        },
+        {
+          "path": "references/medium.md",
+          "sha256": "1b571440c59cc367246cd26fbc3e1e25a51ef8f58854b947071a865a7e6294cf"
+        }
+      ]
+    },
+    {
+      "name": "humanize",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "e436d562b9c6eb327a172f8f85e33309035d4c91a227f4c3ce59d0637f219277"
+        },
+        {
+          "path": "references/rules.md",
+          "sha256": "dd9640e0846e79f0bc7cf094b27832a2c6529eb0d904a35f71ddf920501caadb"
+        }
+      ]
+    }
+  ]
+}

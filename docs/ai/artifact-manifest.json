@@ -1,0 +1,50 @@
+{
+  "sourceRevision": "0199f780f5befa1383795ab1c47b12328973c12b",
+  "apk": {
+    "name": "route-builder-standalone-debug.apk",
+    "sha256": "b6317104bd6ba07ce35908345250339b7427b9a56d1748e4fac2d3f70fcdc638",
+    "bytes": 106518905
+  },
+  "video": {
+    "name": "route-builder-demo.mp4",
+    "sha256": "5d048be7e62c5ba925bf0d1a89cfdfa8c4b747dfcb645af7b260c861ccdfd4b7",
+    "bytes": 2876585,
+    "durationSeconds": 87.284956,
+    "width": 720,
+    "height": 1640,
+    "codec": "h264",
+    "originalUnedited": true,
+    "fullDecodeExitCode": 0
+  },
+  "device": {
+    "model": "25028PC03G",
+    "androidVersion": "15",
+    "logicalWidthDp": 360
+  },
+  "android": {
+    "minimumApi": 26,
+    "targetApi": 36,
+    "abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86",
+      "x86_64"
+    ]
+  },
+  "checks": {
+    "suites": 18,
+    "tests": 237,
+    "lint": "passed",
+    "typecheck": "passed",
+    "nativeAssemble": "SUCCESS",
+    "nativeLint": "SUCCESS"
+  },
+  "videoPayload": {
+    "stop_id": "stp_1020",
+    "packages": 2,
+    "instructions": "Leave at reception",
+    "routeId": "rt_2004",
+    "status": "draft",
+    "observedPosts": 1
+  }
+}
