@@ -1,0 +1,8 @@
+{"at":"2026-11-09T23:31:14.572Z","path":"/v1/stops/stp_1018/photos","stage":"started"}
+{"at":"2026-11-09T23:31:15.106Z","path":"/v1/stops/stp_1020/photos","stage":"started"}
+{"at":"2026-11-09T23:31:17.304514+00:00","event":"remove first card touch while photo pending"}
+{"at":"2026-11-09T23:31:24.580Z","path":"/v1/stops/stp_1018/photos","stage":"released","status":200}
+{"at":"2026-11-09T23:31:25.364Z","path":"/v1/stops/stp_1020/photos","stage":"released","status":500}
+{"at":"2026-11-09T23:33:12.717Z","path":"/v1/stops/stp_1018/photos","stage":"started"}
+{"at":"2026-11-09T23:33:13.920517+00:00","event":"typed edited into survivor while photos pending"}
+{"at":"2026-11-09T23:33:22.727Z","path":"/v1/stops/stp_1018/photos","stage":"released","status":200}

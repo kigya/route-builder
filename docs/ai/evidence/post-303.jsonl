@@ -1,0 +1,1 @@
+{"at":"2026-11-09T23:51:43.136Z","method":"POST","path":"/v1/routes","request":"{\"stops\":[{\"stop_id\":\"stp_1018\",\"packages\":1,\"instructions\":\"Door note\"}]}","status":303,"proxyResponse":true}

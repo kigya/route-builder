@@ -1,0 +1,3 @@
+{"at":"2026-11-09T23:49:06.737Z","method":"GET","path":"/v1/stops?page=1&page_size=50&q=","redirected":true}
+{"at":"2026-11-09T23:49:06.750Z","method":"GET","path":"/v1/stops?page=1&page_size=50&q=","redirected":false}
+{"at":"2026-11-09T23:49:06.773Z","method":"GET","path":"/v1/stops?page=2&page_size=50&q=","redirected":false}

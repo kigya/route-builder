@@ -1,0 +1,1 @@
+{"at":"2026-11-10T00:39:21.053Z","method":"POST","path":"/v1/routes","request":"{\"stops\":[{\"stop_id\":\"stp_1020\",\"packages\":2,\"instructions\":\"Leave at reception\"}]}","status":201,"response":"{\"id\":\"rt_2005\",\"stops\":[{\"stop_id\":\"stp_1020\",\"packages\":2,\"instructions\":\"Leave at reception\"}],\"status\":\"draft\"}","responseDropped":false}
